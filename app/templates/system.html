@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}System Monitor{% endblock %}
+{% block page_title %}System Monitor{% endblock %}
+{% block page_subtitle %}Real-time infrastructure monitoring{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-label">Flask API</span>
+            <div class="stat-card-icon success">🖥️</div>
+        </div>
+        <div class="stat-card-value" style="color: var(--success); -webkit-text-fill-color: var(--success);">Online</div>
+        <div class="stat-card-change positive">Port 5000</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-label">PostgreSQL</span>
+            <div class="stat-card-icon success">🐘</div>
+        </div>
+        <div class="stat-card-value" style="color: var(--success); -webkit-text-fill-color: var(--success);">Connected</div>
+        <div class="stat-card-change positive">Port 5432</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-label">Apache Kafka</span>
+            <div class="stat-card-icon success">📡</div>
+        </div>
+        <div class="stat-card-value" style="color: var(--success); -webkit-text-fill-color: var(--success);">Streaming</div>
+        <div class="stat-card-change positive">Port 9092</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-label">AWS S3</span>
+            <div class="stat-card-icon info">☁️</div>
+        </div>
+        <div class="stat-card-value" style="color: var(--info); -webkit-text-fill-color: var(--info);">Ready</div>
+        <div class="stat-card-change positive">Encrypted</div>
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Kafka Topics</h3>
+        </div>
+        <div class="card-body">
+            <ul class="activity-feed">
+                <li class="activity-item">
+                    <span class="activity-dot active"></span>
+                    <div class="activity-content">
+                        <div class="activity-text"><strong>client.onboarded</strong></div>
+                        <div class="activity-time">Auto-creates subscription on new client</div>
+                    </div>
+                </li>
+                <li class="activity-item">
+                    <span class="activity-dot active"></span>
+                    <div class="activity-content">
+                        <div class="activity-text"><strong>subscription.created</strong></div>
+                        <div class="activity-time">Auto-generates first invoice</div>
+                    </div>
+                </li>
+                <li class="activity-item">
+                    <span class="activity-dot active"></span>
+                    <div class="activity-content">
+                        <div class="activity-text"><strong>invoice.generated</strong></div>
+                        <div class="activity-time">Sends notification to client</div>
+                    </div>
+                </li>
+                <li class="activity-item">
+                    <span class="activity-dot active"></span>
+                    <div class="activity-content">
+                        <div class="activity-text"><strong>document.uploaded</strong></div>
+                        <div class="activity-time">Logs to audit trail</div>
+                    </div>
+                </li>
+                <li class="activity-item">
+                    <span class="activity-dot pending"></span>
+                    <div class="activity-content">
+                        <div class="activity-text"><strong>error.detected</strong></div>
+                        <div class="activity-time">Triggers Lambda recovery workflow</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Architecture</h3>
+        </div>
+        <div class="card-body">
+            <ul class="activity-feed">
+                <li class="activity-item">
+                    <span class="activity-dot info"></span>
+                    <div class="activity-content">
+                        <div class="activity-text"><strong>GraphQL API</strong></div>
+                        <div class="activity-time">Ariadne schema-first • /graphql endpoint</div>
+                    </div>
+                </li>
+                <li class="activity-item">
+                    <span class="activity-dot info"></span>
+                    <div class="activity-content">
+                        <div class="activity-text"><strong>Event-Driven Architecture</strong></div>
+                        <div class="activity-time">Kafka streams real-time messages across services</div>
+                    </div>
+                </li>
+                <li class="activity-item">
+                    <span class="activity-dot info"></span>
+                    <div class="activity-content">
+                        <div class="activity-text"><strong>AWS S3 Storage</strong></div>
+                        <div class="activity-time">SSE-S3 encryption • Lifecycle policies • Presigned URLs</div>
+                    </div>
+                </li>
+                <li class="activity-item">
+                    <span class="activity-dot info"></span>
+                    <div class="activity-content">
+                        <div class="activity-text"><strong>AWS Lambda Monitor</strong></div>
+                        <div class="activity-time">Error classification • Recovery workflows • SNS alerts</div>
+                    </div>
+                </li>
+                <li class="activity-item">
+                    <span class="activity-dot info"></span>
+                    <div class="activity-content">
+                        <div class="activity-text"><strong>Docker Compose</strong></div>
+                        <div class="activity-time">PostgreSQL + Kafka + Zookeeper + Kafka UI</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

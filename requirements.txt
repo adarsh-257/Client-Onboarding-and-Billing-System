@@ -1,0 +1,33 @@
+# Flask & Extensions
+Flask==3.1.0
+flask-sqlalchemy==3.1.1
+flask-migrate==4.1.0
+flask-cors==5.0.1
+
+# GraphQL
+ariadne==0.23.0
+
+# Database
+psycopg2-binary==2.9.10
+SQLAlchemy==2.0.36
+
+# Kafka
+confluent-kafka==2.6.1
+
+# AWS
+boto3==1.35.81
+botocore==1.35.81
+
+# PDF Generation
+weasyprint==63.1
+
+# Utilities
+python-dotenv==1.0.1
+gunicorn==23.0.0
+faker==33.1.0
+marshmallow==3.23.2
+
+# Testing
+pytest==8.3.4
+pytest-cov==6.0.0
+moto[s3,lambda,ses]==5.0.22

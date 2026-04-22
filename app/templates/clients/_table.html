@@ -1,0 +1,82 @@
+<!-- Client table partial (used by HTMX) -->
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Company</th>
+                <th>Contact</th>
+                <th>Email</th>
+                <th>Industry</th>
+                <th>Size</th>
+                <th>Status</th>
+                <th>Onboarded</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for client in clients['items'] %}
+            <tr>
+                <td>
+                    <a href="{{ url_for('clients.detail', client_id=client.id) }}" class="table-link">
+                        {{ client.company_name }}
+                    </a>
+                </td>
+                <td>{{ client.contact_name }}</td>
+                <td class="text-muted truncate">{{ client.email }}</td>
+                <td>{{ client.industry or '—' }}</td>
+                <td>{{ client.company_size or '—' }}</td>
+                <td><span class="badge badge-{{ client.status }}">{{ client.status }}</span></td>
+                <td class="text-muted">
+                    {% if client.onboarded_at %}
+                        {{ client.onboarded_at[:10] }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('clients.detail', client_id=client.id) }}" class="btn btn-sm btn-ghost">View</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">👥</div>
+                        <div class="empty-state-title">No clients found</div>
+                        <div class="empty-state-text">Try adjusting your filters or onboard a new client.</div>
+                        <a href="{{ url_for('clients.onboard') }}" class="btn btn-primary">Onboard Client</a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+{% if clients.pages > 1 %}
+<div class="card-footer">
+    <span class="text-muted" style="font-size: 0.8rem;">
+        Showing {{ clients['items']|length }} of {{ clients.total }} clients
+    </span>
+    <div class="pagination">
+        {% if clients.has_prev %}
+        <a href="{{ url_for('clients.list_clients', page=clients.current_page - 1) }}">← Prev</a>
+        {% endif %}
+
+        {% for p in range(1, clients.pages + 1) %}
+            {% if p == clients.current_page %}
+                <span class="active">{{ p }}</span>
+            {% elif p <= 3 or p > clients.pages - 2 or (p >= clients.current_page - 1 and p <= clients.current_page + 1) %}
+                <a href="{{ url_for('clients.list_clients', page=p) }}">{{ p }}</a>
+            {% elif p == 4 or p == clients.pages - 2 %}
+                <span class="disabled">...</span>
+            {% endif %}
+        {% endfor %}
+
+        {% if clients.has_next %}
+        <a href="{{ url_for('clients.list_clients', page=clients.current_page + 1) }}">Next →</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}

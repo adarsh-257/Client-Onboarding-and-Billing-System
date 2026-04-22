@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Client Onboarding and Billing System — Manage clients, subscriptions, invoices, and documents">
+    <title>{% block title %}Dashboard{% endblock %} — Client Onboarding System</title>
+
+    <!-- Design System CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- Google Fonts (preloaded icon font) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lucide-static@latest/font/lucide.min.css">
+
+    <!-- HTMX for SPA-like interactions -->
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+
+    <!-- Alpine.js for lightweight reactivity -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- ===== Sidebar ===== -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="sidebar-brand-icon">⚡</div>
+                <div>
+                    <h1>OnboardPro</h1>
+                    <span>Client Management</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <a href="{{ url_for('dashboard.index') }}" class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}" id="nav-dashboard">
+                        <span class="icon">📊</span>
+                        Dashboard
+                    </a>
+                    <a href="{{ url_for('clients.list_clients') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('clients.') %}active{% endif %}" id="nav-clients">
+                        <span class="icon">👥</span>
+                        Clients
+                    </a>
+                    <a href="{{ url_for('invoices.list_invoices') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('invoices.') %}active{% endif %}" id="nav-invoices">
+                        <span class="icon">📄</span>
+                        Invoices
+                    </a>
+                    <a href="{{ url_for('documents.list_documents') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('documents.') %}active{% endif %}" id="nav-documents">
+                        <span class="icon">📁</span>
+                        Documents
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Tools</div>
+                    <a href="/graphql" class="nav-link" id="nav-graphql" target="_blank">
+                        <span class="icon">🔗</span>
+                        GraphQL Playground
+                    </a>
+                    <a href="{{ url_for('dashboard.system_monitor') }}" class="nav-link {% if request.endpoint == 'dashboard.system_monitor' %}active{% endif %}" id="nav-system">
+                        <span class="icon">🖥️</span>
+                        System Monitor
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Quick Actions</div>
+                    <a href="{{ url_for('clients.onboard') }}" class="nav-link" id="nav-onboard">
+                        <span class="icon">➕</span>
+                        Onboard Client
+                    </a>
+                    <a href="{{ url_for('invoices.generate') }}" class="nav-link" id="nav-generate-invoice">
+                        <span class="icon">🧾</span>
+                        Generate Invoice
+                    </a>
+                    <a href="{{ url_for('documents.upload') }}" class="nav-link" id="nav-upload-doc">
+                        <span class="icon">📤</span>
+                        Upload Document
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- ===== Main Content ===== -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div>
+                    <h2 class="page-title">{% block page_title %}Dashboard{% endblock %}</h2>
+                    <p class="page-subtitle">{% block page_subtitle %}Overview of your onboarding system{% endblock %}</p>
+                </div>
+                <div class="header-actions">
+                    {% block header_actions %}{% endblock %}
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}" x-data="{ show: true }" x-show="show"
+                                 x-transition x-init="setTimeout(() => show = false, 5000)">
+                                {% if category == 'success' %}✅{% elif category == 'error' %}❌{% elif category == 'warning' %}⚠️{% else %}ℹ️{% endif %}
+                                {{ message }}
+                                <button @click="show = false" style="margin-left: auto; background: none; border: none; color: inherit; cursor: pointer; font-size: 1.1rem;">×</button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Application JavaScript -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

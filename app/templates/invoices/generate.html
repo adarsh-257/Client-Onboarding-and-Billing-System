@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Generate Invoice{% endblock %}
+{% block page_title %}Generate Invoice{% endblock %}
+{% block page_subtitle %}Create a new invoice for a client{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 800px;">
+    <div class="card-header">
+        <h3 class="card-title">Invoice Details</h3>
+    </div>
+    <div class="card-body" x-data="invoiceForm()">
+        <form method="POST" action="{{ url_for('invoices.generate') }}" id="invoice-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="client_id">Client *</label>
+                    <select class="form-select" id="client_id" name="client_id" required>
+                        <option value="">Select Client</option>
+                        {% for c in clients['items'] %}
+                        <option value="{{ c.id }}">{{ c.company_name }} ({{ c.email }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="notes">Notes</label>
+                    <input type="text" class="form-input" id="notes" name="notes" placeholder="Optional invoice notes">
+                </div>
+            </div>
+
+            <h4 style="color: var(--text-secondary); margin-bottom: 16px; font-size: 0.9rem;">Line Items</h4>
+
+            <template x-for="(item, index) in lineItems" :key="index">
+                <div class="form-row-3" style="align-items: end;">
+                    <div class="form-group">
+                        <label class="form-label" x-show="index === 0">Description *</label>
+                        <input type="text" class="form-input" name="description[]" x-model="item.description"
+                               required placeholder="e.g., Monthly Subscription">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" x-show="index === 0">Quantity</label>
+                        <input type="number" class="form-input" name="quantity[]" x-model="item.quantity"
+                               min="1" step="1" value="1">
+                    </div>
+                    <div class="form-group">
+                        <div class="flex-between" x-show="index === 0">
+                            <label class="form-label">Unit Price *</label>
+                        </div>
+                        <div class="flex gap-1">
+                            <input type="number" class="form-input" name="unit_price[]" x-model="item.unitPrice"
+                                   required min="0" step="0.01" placeholder="0.00">
+                            <button type="button" @click="removeItem(index)" class="btn btn-sm btn-ghost"
+                                    x-show="lineItems.length > 1" style="color: var(--danger);">✕</button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <button type="button" @click="addItem()" class="btn btn-sm btn-secondary mb-3">
+                + Add Line Item
+            </button>
+
+            <div class="flex-between mt-3" style="border-top: 1px solid var(--border-color); padding-top: 20px;">
+                <a href="{{ url_for('invoices.list_invoices') }}" class="btn btn-ghost">← Back</a>
+                <button type="submit" class="btn btn-primary btn-lg" id="btn-submit-invoice">
+                    🧾 Generate Invoice
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+function invoiceForm() {
+    return {
+        lineItems: [{ description: '', quantity: 1, unitPrice: '' }],
+        addItem() {
+            this.lineItems.push({ description: '', quantity: 1, unitPrice: '' });
+        },
+        removeItem(index) {
+            this.lineItems.splice(index, 1);
+        }
+    }
+}
+</script>
+{% endblock %}
+{% endblock %}

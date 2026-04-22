@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}{{ client.company_name }}{% endblock %}
+{% block page_title %}{{ client.company_name }}{% endblock %}
+{% block page_subtitle %}Client details and account management{% endblock %}
+
+{% block header_actions %}
+<span class="badge badge-{{ client.status.value }}" style="font-size: 0.85rem; padding: 6px 14px;">
+    {{ client.status.value }}
+</span>
+{% endblock %}
+
+{% block content %}
+<!-- Client Info Card -->
+<div class="card mb-2">
+    <div class="card-header">
+        <h3 class="card-title">Client Information</h3>
+        <div class="flex gap-1">
+            {% if client.status.value == 'active' %}
+            <form method="POST" action="{{ url_for('clients.update_status', client_id=client.id) }}" style="display:inline;">
+                <input type="hidden" name="status" value="suspended">
+                <button type="submit" class="btn btn-sm btn-danger">Suspend</button>
+            </form>
+            {% elif client.status.value == 'suspended' %}
+            <form method="POST" action="{{ url_for('clients.update_status', client_id=client.id) }}" style="display:inline;">
+                <input type="hidden" name="status" value="active">
+                <button type="submit" class="btn btn-sm btn-success">Reactivate</button>
+            </form>
+            {% endif %}
+            <form method="POST" action="{{ url_for('clients.update_status', client_id=client.id) }}" style="display:inline;">
+                <input type="hidden" name="status" value="archived">
+                <button type="submit" class="btn btn-sm btn-ghost">Archive</button>
+            </form>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="detail-grid">
+            <div class="detail-item">
+                <div class="detail-item-label">Contact Name</div>
+                <div class="detail-item-value">{{ client.contact_name }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-item-label">Email</div>
+                <div class="detail-item-value">{{ client.email }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-item-label">Phone</div>
+                <div class="detail-item-value">{{ client.phone or '—' }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-item-label">Industry</div>
+                <div class="detail-item-value">{{ client.industry or '—' }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-item-label">Company Size</div>
+                <div class="detail-item-value">{{ client.company_size or '—' }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-item-label">Location</div>
+                <div class="detail-item-value">
+                    {{ [client.city, client.state, client.country]|select|join(', ') or '—' }}
+                </div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-item-label">Address</div>
+                <div class="detail-item-value">{{ client.address or '—' }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-item-label">Onboarded</div>
+                <div class="detail-item-value">
+                    {% if client.onboarded_at %}
+                        {{ client.onboarded_at.strftime('%B %d, %Y') }}
+                    {% else %}
+                        Not yet onboarded
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% if client.notes %}
+        <div class="detail-item mt-2">
+            <div class="detail-item-label">Notes</div>
+            <div class="detail-item-value">{{ client.notes }}</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Tabs Section -->
+<div class="grid-3 mt-2">
+    <!-- Subscriptions -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Subscriptions</h3>
+            <span class="nav-badge">{{ subscriptions.total }}</span>
+        </div>
+        <div class="card-body">
+            {% for sub in subscriptions['items'] %}
+            <div class="activity-item">
+                <span class="activity-dot {% if sub.status == 'active' %}active{% elif sub.status == 'cancelled' %}error{% else %}pending{% endif %}"></span>
+                <div class="activity-content">
+                    <div class="activity-text">
+                        <strong>{{ sub.plan.name if sub.plan else 'Unknown' }} Plan</strong>
+                    </div>
+                    <div class="activity-time">
+                        {{ sub.status|capitalize }} · ${{ '%.2f'|format(sub.plan.price if sub.plan else 0) }}/{{ sub.plan.billing_cycle if sub.plan else 'month' }}
+                    </div>
+                </div>
+                <span class="badge badge-{{ sub.status }}">{{ sub.status }}</span>
+            </div>
+            {% else %}
+            <div class="text-center text-muted" style="padding: 20px;">
+                <p>No subscriptions yet</p>
+                <form method="POST" action="{{ url_for('clients.subscribe', client_id=client.id) }}" class="mt-1">
+                    <input type="hidden" name="plan_id" value="1">
+                    <button type="submit" class="btn btn-sm btn-primary">Add Free Plan</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Invoices -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Invoices</h3>
+            <span class="nav-badge">{{ invoices.total }}</span>
+        </div>
+        <div class="card-body">
+            {% for inv in invoices['items'] %}
+            <div class="activity-item">
+                <span class="activity-dot {% if inv.status == 'paid' %}active{% elif inv.status == 'overdue' %}error{% else %}pending{% endif %}"></span>
+                <div class="activity-content">
+                    <a href="{{ url_for('invoices.detail', invoice_id=inv.id) }}" class="activity-text table-link">
+                        <strong>{{ inv.invoice_number }}</strong>
+                    </a>
+                    <div class="activity-time">${{ '%.2f'|format(inv.total) }} · {{ inv.status }}</div>
+                </div>
+                <span class="badge badge-{{ inv.status }}">{{ inv.status }}</span>
+            </div>
+            {% else %}
+            <div class="text-center text-muted" style="padding: 20px;">
+                No invoices yet
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Documents -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Documents</h3>
+            <span class="nav-badge">{{ documents.total }}</span>
+        </div>
+        <div class="card-body">
+            {% for doc in documents['items'] %}
+            <div class="activity-item">
+                <span class="activity-dot info"></span>
+                <div class="activity-content">
+                    <div class="activity-text"><strong>{{ doc.original_filename }}</strong></div>
+                    <div class="activity-time">{{ doc.size_display }} · {{ doc.document_type }} · 🔒 {{ doc.encryption_status }}</div>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center text-muted" style="padding: 20px;">
+                No documents yet
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

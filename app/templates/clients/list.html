@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Clients{% endblock %}
+{% block page_title %}Client Management{% endblock %}
+{% block page_subtitle %}Manage and onboard clients across your platform{% endblock %}
+
+{% block header_actions %}
+<a href="{{ url_for('clients.onboard') }}" class="btn btn-primary" id="btn-onboard-client">
+    ➕ Onboard Client
+</a>
+{% endblock %}
+
+{% block content %}
+<!-- Search & Filters -->
+<div class="search-bar">
+    <div class="search-input-wrapper">
+        <span class="icon">🔍</span>
+        <input type="text" placeholder="Search clients by name, email, or contact..."
+               value="{{ current_search }}" id="client-search"
+               hx-get="{{ url_for('clients.list_clients') }}"
+               hx-trigger="keyup changed delay:300ms"
+               hx-target="#clients-table"
+               hx-include="[name='status'], [name='industry']"
+               name="search">
+    </div>
+    <select class="form-select" name="status" id="filter-status" style="width: 160px;"
+            hx-get="{{ url_for('clients.list_clients') }}"
+            hx-trigger="change"
+            hx-target="#clients-table"
+            hx-include="#client-search, [name='industry']">
+        <option value="">All Statuses</option>
+        {% for s in statuses %}
+        <option value="{{ s }}" {% if current_status == s %}selected{% endif %}>{{ s|capitalize }}</option>
+        {% endfor %}
+    </select>
+    <select class="form-select" name="industry" id="filter-industry" style="width: 180px;"
+            hx-get="{{ url_for('clients.list_clients') }}"
+            hx-trigger="change"
+            hx-target="#clients-table"
+            hx-include="#client-search, [name='status']">
+        <option value="">All Industries</option>
+        {% for ind in industries %}
+        <option value="{{ ind }}" {% if current_industry == ind %}selected{% endif %}>{{ ind }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+<!-- Clients Table -->
+<div class="card" id="clients-table">
+    {% include 'clients/_table.html' %}
+</div>
+{% endblock %}

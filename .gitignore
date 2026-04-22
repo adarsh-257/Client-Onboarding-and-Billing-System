@@ -1,0 +1,40 @@
+# Client Onboarding and Billing System
+
+## .env
+.env
+
+## Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+## Virtual Environment
+venv/
+env/
+.venv/
+
+## IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+## Database
+*.db
+*.sqlite
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Docker
+postgres_data/
+
+## Migrations
+migrations/versions/*.pyc

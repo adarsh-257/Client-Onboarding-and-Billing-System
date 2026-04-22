@@ -1,0 +1,265 @@
+"""GraphQL Schema Definition Language (SDL)."""
+
+# ---------- Enums ----------
+
+enum ClientStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  ARCHIVED
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+  REFUNDED
+}
+
+enum BillingCycle {
+  MONTHLY
+  QUARTERLY
+  ANNUAL
+}
+
+enum DocumentType {
+  CONTRACT
+  IDENTITY
+  FINANCIAL
+  LEGAL
+  CORRESPONDENCE
+  OTHER
+}
+
+# ---------- Types ----------
+
+type Client {
+  id: Int!
+  companyName: String!
+  contactName: String!
+  email: String!
+  phone: String
+  address: String
+  city: String
+  state: String
+  country: String
+  industry: String
+  companySize: String
+  status: ClientStatus!
+  notes: String
+  onboardedAt: String
+  createdAt: String!
+  updatedAt: String!
+  subscriptions: [Subscription!]
+  invoices: [Invoice!]
+  documents: [Document!]
+}
+
+type Plan {
+  id: Int!
+  name: String!
+  description: String
+  price: Float!
+  billingCycle: BillingCycle!
+  features: [String!]
+  maxUsers: Int!
+  maxStorageGb: Int!
+  isActive: Boolean!
+  createdAt: String!
+}
+
+type Subscription {
+  id: Int!
+  clientId: Int!
+  planId: Int!
+  plan: Plan
+  status: SubscriptionStatus!
+  startDate: String!
+  endDate: String
+  autoRenew: Boolean!
+  cancelledAt: String
+  cancellationReason: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Invoice {
+  id: Int!
+  clientId: Int!
+  subscriptionId: Int
+  invoiceNumber: String!
+  status: InvoiceStatus!
+  subtotal: Float!
+  taxRate: Float!
+  taxAmount: Float!
+  total: Float!
+  currency: String!
+  dueDate: String!
+  paidAt: String
+  notes: String
+  lineItems: [LineItem!]!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type LineItem {
+  id: Int!
+  invoiceId: Int!
+  description: String!
+  quantity: Float!
+  unitPrice: Float!
+  total: Float!
+}
+
+type Document {
+  id: Int!
+  clientId: Int!
+  filename: String!
+  originalFilename: String!
+  s3Key: String!
+  contentType: String!
+  sizeBytes: Int!
+  sizeDisplay: String!
+  documentType: DocumentType!
+  encryptionStatus: String!
+  retentionDays: Int!
+  expiresAt: String
+  uploadedAt: String!
+}
+
+type DashboardStats {
+  totalClients: Int!
+  activeClients: Int!
+  pendingClients: Int!
+  activeSubscriptions: Int!
+  totalRevenue: Float!
+  pendingInvoices: Int!
+  overdueInvoices: Int!
+  totalDocuments: Int!
+}
+
+type PaginatedClients {
+  items: [Client!]!
+  total: Int!
+  pages: Int!
+  currentPage: Int!
+  hasNext: Boolean!
+  hasPrev: Boolean!
+}
+
+type PaginatedInvoices {
+  items: [Invoice!]!
+  total: Int!
+  pages: Int!
+  currentPage: Int!
+}
+
+type PaginatedSubscriptions {
+  items: [Subscription!]!
+  total: Int!
+  pages: Int!
+  currentPage: Int!
+}
+
+type PaginatedDocuments {
+  items: [Document!]!
+  total: Int!
+  pages: Int!
+  currentPage: Int!
+}
+
+type RevenueSummary {
+  totalRevenue: Float!
+  totalPaidInvoices: Int!
+  pendingAmount: Float!
+  overdueAmount: Float!
+}
+
+# ---------- Inputs ----------
+
+input OnboardClientInput {
+  companyName: String!
+  contactName: String!
+  email: String!
+  phone: String
+  address: String
+  city: String
+  state: String
+  country: String
+  industry: String
+  companySize: String
+  notes: String
+}
+
+input UpdateClientInput {
+  companyName: String
+  contactName: String
+  email: String
+  phone: String
+  address: String
+  city: String
+  state: String
+  country: String
+  industry: String
+  companySize: String
+  notes: String
+}
+
+input CreateSubscriptionInput {
+  clientId: Int!
+  planId: Int!
+  autoRenew: Boolean
+}
+
+input GenerateInvoiceInput {
+  clientId: Int!
+  subscriptionId: Int
+  lineItems: [LineItemInput!]!
+  dueDays: Int
+  notes: String
+}
+
+input LineItemInput {
+  description: String!
+  quantity: Float
+  unitPrice: Float!
+}
+
+# ---------- Queries ----------
+
+type Query {
+  clients(page: Int, perPage: Int, status: ClientStatus, search: String, industry: String): PaginatedClients!
+  client(id: Int!): Client
+  plans: [Plan!]!
+  subscriptions(page: Int, perPage: Int, status: SubscriptionStatus, clientId: Int): PaginatedSubscriptions!
+  invoices(page: Int, perPage: Int, status: InvoiceStatus, clientId: Int): PaginatedInvoices!
+  invoice(id: Int!): Invoice
+  documents(page: Int, perPage: Int, clientId: Int, documentType: DocumentType): PaginatedDocuments!
+  dashboardStats: DashboardStats!
+  revenueSummary: RevenueSummary!
+  industries: [String!]!
+}
+
+# ---------- Mutations ----------
+
+type Mutation {
+  onboardClient(input: OnboardClientInput!): Client!
+  updateClient(id: Int!, input: UpdateClientInput!): Client!
+  updateClientStatus(id: Int!, status: ClientStatus!): Client!
+  createSubscription(input: CreateSubscriptionInput!): Subscription!
+  cancelSubscription(id: Int!, reason: String): Subscription!
+  generateInvoice(input: GenerateInvoiceInput!): Invoice!
+  markInvoicePaid(id: Int!): Invoice!
+  markInvoiceSent(id: Int!): Invoice!
+  deleteDocument(id: Int!): Document!
+}

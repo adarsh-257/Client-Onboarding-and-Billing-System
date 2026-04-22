@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Invoices{% endblock %}
+{% block page_title %}Invoice Management{% endblock %}
+{% block page_subtitle %}Track and manage billing invoices{% endblock %}
+
+{% block header_actions %}
+<a href="{{ url_for('invoices.generate') }}" class="btn btn-primary" id="btn-generate-invoice">
+    🧾 Generate Invoice
+</a>
+{% endblock %}
+
+{% block content %}
+<!-- Filters -->
+<div class="search-bar">
+    <div class="search-input-wrapper" style="max-width: 200px;">
+        <span class="icon">📋</span>
+        <select class="form-select" name="status" style="padding-left: 38px;"
+                hx-get="{{ url_for('invoices.list_invoices') }}"
+                hx-trigger="change"
+                hx-target="#invoices-table">
+            <option value="">All Statuses</option>
+            {% for s in statuses %}
+            <option value="{{ s }}" {% if current_status == s %}selected{% endif %}>{{ s|capitalize }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+
+<!-- Invoices Table -->
+<div class="card" id="invoices-table">
+    {% include 'invoices/_table.html' %}
+</div>
+{% endblock %}

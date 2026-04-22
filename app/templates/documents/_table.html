@@ -1,0 +1,70 @@
+<!-- Document table partial -->
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Filename</th>
+                <th>Client</th>
+                <th>Type</th>
+                <th>Size</th>
+                <th>Encryption</th>
+                <th>Retention</th>
+                <th>Uploaded</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for doc in documents['items'] %}
+            <tr>
+                <td>
+                    <span class="table-link">📄 {{ doc.original_filename }}</span>
+                </td>
+                <td>
+                    <a href="{{ url_for('clients.detail', client_id=doc.client_id) }}" class="table-link">
+                        Client #{{ doc.client_id }}
+                    </a>
+                </td>
+                <td><span class="badge badge-sent">{{ doc.document_type }}</span></td>
+                <td>{{ doc.size_display }}</td>
+                <td><span class="text-success">🔒 {{ doc.encryption_status }}</span></td>
+                <td>{{ doc.retention_days }} days</td>
+                <td class="text-muted">{{ doc.uploaded_at[:10] if doc.uploaded_at else '—' }}</td>
+                <td>
+                    <div class="flex gap-1">
+                        <a href="{{ url_for('documents.download', document_id=doc.id) }}" class="btn btn-sm btn-secondary">Download</a>
+                        <form method="POST" action="{{ url_for('documents.delete', document_id=doc.id) }}" style="display:inline;"
+                              onsubmit="return confirm('Delete this document?')">
+                            <button type="submit" class="btn btn-sm btn-ghost" style="color: var(--danger);">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📁</div>
+                        <div class="empty-state-title">No documents found</div>
+                        <div class="empty-state-text">Upload your first document to get started with encrypted storage.</div>
+                        <a href="{{ url_for('documents.upload') }}" class="btn btn-primary">Upload Document</a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if documents.pages > 1 %}
+<div class="card-footer">
+    <span class="text-muted" style="font-size: 0.8rem;">
+        Showing {{ documents['items']|length }} of {{ documents.total }} documents
+    </span>
+    <div class="pagination">
+        {% for p in range(1, documents.pages + 1) %}
+            <a href="{{ url_for('documents.list_documents', page=p) }}"
+               class="{% if p == documents.current_page %}active{% endif %}">{{ p }}</a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}

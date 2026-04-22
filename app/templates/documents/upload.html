@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Document{% endblock %}
+{% block page_title %}Upload Document{% endblock %}
+{% block page_subtitle %}Upload encrypted documents to AWS S3{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px;">
+    <div class="card-header">
+        <h3 class="card-title">Document Upload</h3>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('documents.upload') }}" enctype="multipart/form-data" id="upload-form">
+            <div class="form-group">
+                <label class="form-label" for="client_id">Client *</label>
+                <select class="form-select" id="client_id" name="client_id" required>
+                    <option value="">Select Client</option>
+                    {% for c in clients['items'] %}
+                    <option value="{{ c.id }}">{{ c.company_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group" x-data="{ fileName: '' }">
+                <label class="form-label" for="file">File *</label>
+                <div style="border: 2px dashed var(--border-light); border-radius: var(--radius-md); padding: 40px; text-align: center; cursor: pointer; transition: all var(--transition-fast);"
+                     @click="$refs.fileInput.click()"
+                     @dragover.prevent="$el.style.borderColor = 'var(--accent-primary)'"
+                     @dragleave.prevent="$el.style.borderColor = 'var(--border-light)'"
+                     @drop.prevent="$refs.fileInput.files = $event.dataTransfer.files; fileName = $refs.fileInput.files[0]?.name; $el.style.borderColor = 'var(--success)'">
+                    <div x-show="!fileName">
+                        <div style="font-size: 2rem; margin-bottom: 8px;">📤</div>
+                        <p class="text-muted">Click to browse or drag & drop your file here</p>
+                        <p class="text-muted" style="font-size: 0.75rem;">PDF, DOC, XLS, PNG, JPG up to 50MB</p>
+                    </div>
+                    <div x-show="fileName">
+                        <div style="font-size: 2rem; margin-bottom: 8px;">✅</div>
+                        <p class="text-accent" x-text="fileName"></p>
+                    </div>
+                    <input type="file" name="file" id="file" x-ref="fileInput"
+                           @change="fileName = $refs.fileInput.files[0]?.name"
+                           style="display: none;" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="document_type">Document Type</label>
+                    <select class="form-select" id="document_type" name="document_type">
+                        {% for t in doc_types %}
+                        <option value="{{ t }}">{{ t|capitalize }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="retention_days">Retention Period (Days)</label>
+                    <input type="number" class="form-input" id="retention_days" name="retention_days"
+                           value="365" min="1" max="3650">
+                    <div class="form-hint">Files auto-delete after this period via S3 lifecycle policy</div>
+                </div>
+            </div>
+
+            <div class="flex-between mt-3">
+                <a href="{{ url_for('documents.list_documents') }}" class="btn btn-ghost">← Back</a>
+                <button type="submit" class="btn btn-primary btn-lg" id="btn-submit-upload">
+                    🔒 Upload & Encrypt
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

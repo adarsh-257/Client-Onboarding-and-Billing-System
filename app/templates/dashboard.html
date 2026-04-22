@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Real-time overview of your client onboarding system{% endblock %}
+
+{% block content %}
+<!-- ===== KPI Stats ===== -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-label">Total Clients</span>
+            <div class="stat-card-icon primary">👥</div>
+        </div>
+        <div class="stat-card-value" id="stat-total-clients">{{ stats.total_clients }}</div>
+        <div class="stat-card-change positive">
+            <span>↑</span> {{ stats.active_clients }} active
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-label">Active Subscriptions</span>
+            <div class="stat-card-icon success">📋</div>
+        </div>
+        <div class="stat-card-value" id="stat-subscriptions">{{ stats.active_subscriptions }}</div>
+        <div class="stat-card-change positive">
+            <span>✓</span> All synced
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-label">Total Revenue</span>
+            <div class="stat-card-icon info">💰</div>
+        </div>
+        <div class="stat-card-value" id="stat-revenue">${{ '{:,.2f}'.format(stats.total_revenue) }}</div>
+        <div class="stat-card-change positive">
+            <span>↑</span> ${{ '{:,.2f}'.format(revenue.pending_amount) }} pending
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-label">Documents Stored</span>
+            <div class="stat-card-icon warning">📁</div>
+        </div>
+        <div class="stat-card-value" id="stat-documents">{{ stats.total_documents }}</div>
+        <div class="stat-card-change positive">
+            <span>🔒</span> Encrypted (S3)
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-label">Pending Clients</span>
+            <div class="stat-card-icon warning">⏳</div>
+        </div>
+        <div class="stat-card-value">{{ stats.pending_clients }}</div>
+        <div class="stat-card-change">
+            <span>📝</span> Awaiting approval
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-label">Pending Invoices</span>
+            <div class="stat-card-icon info">📨</div>
+        </div>
+        <div class="stat-card-value">{{ stats.pending_invoices }}</div>
+        <div class="stat-card-change {% if stats.overdue_invoices > 0 %}negative{% endif %}">
+            {% if stats.overdue_invoices > 0 %}
+                <span>⚠️</span> {{ stats.overdue_invoices }} overdue
+            {% else %}
+                <span>✓</span> None overdue
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-label">Overdue Amount</span>
+            <div class="stat-card-icon danger">🚨</div>
+        </div>
+        <div class="stat-card-value">${{ '{:,.2f}'.format(revenue.overdue_amount) }}</div>
+        <div class="stat-card-change negative">
+            <span>↓</span> Needs attention
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <span class="stat-card-label">Kafka Events</span>
+            <div class="stat-card-icon primary">📡</div>
+        </div>
+        <div class="stat-card-value">Live</div>
+        <div class="stat-card-change positive">
+            <span>●</span> Streaming active
+        </div>
+    </div>
+</div>
+
+<!-- ===== Content Grid ===== -->
+<div class="content-grid">
+    <!-- Recent Clients -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Recently Onboarded Clients</h3>
+            <a href="{{ url_for('clients.list_clients') }}" class="btn btn-sm btn-ghost">View All →</a>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Company</th>
+                        <th>Contact</th>
+                        <th>Industry</th>
+                        <th>Status</th>
+                        <th>Onboarded</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for client in stats.recent_clients %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('clients.detail', client_id=client.id) }}" class="table-link">
+                                {{ client.company_name }}
+                            </a>
+                        </td>
+                        <td>{{ client.contact_name }}</td>
+                        <td>{{ client.industry or '—' }}</td>
+                        <td><span class="badge badge-{{ client.status }}">{{ client.status }}</span></td>
+                        <td class="text-muted">
+                            {% if client.onboarded_at %}
+                                {{ client.onboarded_at[:10] }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted" style="padding: 40px;">
+                            No clients onboarded yet. <a href="{{ url_for('clients.onboard') }}">Onboard your first client →</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Quick Actions & Activity -->
+    <div>
+        <!-- Quick Actions -->
+        <div class="card mb-2">
+            <div class="card-header">
+                <h3 class="card-title">Quick Actions</h3>
+            </div>
+            <div class="card-body">
+                <a href="{{ url_for('clients.onboard') }}" class="btn btn-primary btn-lg" style="width: 100%; margin-bottom: 10px;" id="btn-quick-onboard">
+                    ➕ Onboard New Client
+                </a>
+                <a href="{{ url_for('invoices.generate') }}" class="btn btn-secondary btn-lg" style="width: 100%; margin-bottom: 10px;" id="btn-quick-invoice">
+                    🧾 Generate Invoice
+                </a>
+                <a href="{{ url_for('documents.upload') }}" class="btn btn-secondary btn-lg" style="width: 100%;" id="btn-quick-upload">
+                    📤 Upload Document
+                </a>
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">System Status</h3>
+            </div>
+            <div class="card-body">
+                <ul class="activity-feed">
+                    <li class="activity-item">
+                        <span class="activity-dot active"></span>
+                        <div class="activity-content">
+                            <div class="activity-text"><strong>Flask API</strong> — Running</div>
+                            <div class="activity-time">Port 5000</div>
+                        </div>
+                    </li>
+                    <li class="activity-item">
+                        <span class="activity-dot active"></span>
+                        <div class="activity-content">
+                            <div class="activity-text"><strong>PostgreSQL</strong> — Connected</div>
+                            <div class="activity-time">Port 5432</div>
+                        </div>
+                    </li>
+                    <li class="activity-item">
+                        <span class="activity-dot active"></span>
+                        <div class="activity-content">
+                            <div class="activity-text"><strong>Apache Kafka</strong> — Streaming</div>
+                            <div class="activity-time">Port 9092</div>
+                        </div>
+                    </li>
+                    <li class="activity-item">
+                        <span class="activity-dot active"></span>
+                        <div class="activity-content">
+                            <div class="activity-text"><strong>GraphQL API</strong> — Ready</div>
+                            <div class="activity-time">/graphql endpoint</div>
+                        </div>
+                    </li>
+                    <li class="activity-item">
+                        <span class="activity-dot info"></span>
+                        <div class="activity-content">
+                            <div class="activity-text"><strong>AWS S3</strong> — Connected</div>
+                            <div class="activity-time">Encrypted storage</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
